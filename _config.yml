@@ -1,0 +1,22 @@
+# Permalinks
+#
+# Use of `relative_permalinks` ensures post links from the index work properly.
+permalink:           '/:year/:title'
+relative_permalinks: true
+
+# Setup
+title:               blog.irhh.de
+tagline:             'virtualization, management, deployment'
+description:         'Just another IT-blog... Focused on virtualization, cloud and web-stuff.'
+url:                 ''
+baseurl:             ''
+paginate:            5
+
+# About/contact
+author:
+  name:              Rasmus Leissner
+  url:               https://irhh.de
+  email:             blog@irhh.de
+
+gems:
+  - jekyll-sitemap

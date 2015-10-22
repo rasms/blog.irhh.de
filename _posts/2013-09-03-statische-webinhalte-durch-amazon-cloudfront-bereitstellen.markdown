@@ -1,0 +1,43 @@
+---
+author: Rasmus
+comments: true
+date: 2013-09-03 11:12:43+00:00
+layout: post
+slug: statische-webinhalte-durch-amazon-cloudfront-bereitstellen
+title: Statische Webinhalte durch Amazon CloudFront bereitstellen
+wordpress_id: 2089
+categories:
+- Amazon CloudFront
+- AWS
+---
+
+Nachdem ich [hier](http://blog.irhh.de/2013/statische-website-auf-amazon-s3-hosten/) bereits erklärt habe, wie man eine statische Website mit Amazon S3 bereitstellt, wende ich mich nun der Content-Bereitstellung durch Amazon CloudFront zu.
+
+Zuerst einmal etwas Theorie: **Was ist Amazon CloudFront und was bringt es mir? **
+
+<!-- more -->
+
+	
+  1. Amazon CloudFront ist ein Content Delivery Network (CDN). Ziel eines CDN ist es, die Bereitstellung von (statischem) Content zu beschleunigen, indem der Content durch weltweit verteilte Server (sog. Edge Locations) bereitgestellt wird. Das Prinzip dahinter ist simpel: Steht mein Webserver irgendwo in Deutschland und ein Besucher ruft die Seite z.B. aus New York auf, dann hat er aufgrund der physischen Entfernung recht hohe Latenzzeiten, d.h. die Seite ist langsam. Besonders zu tragen kommt dies bei Inhalten, also Bildern, Videos, aber auch bei JavaScript und CSS. Ein CDN spiegelt nun diese Inhalte an alle Edge Locations weltweit und regelt auch die Zugriffe. D.h. Content der über das CDN verteilt wird, wird einem Seitenbesucher aus New York direkt von der nächsten Edge Location zu verfügung gestellt, also vermutlich von einer Serverfarm in Nordamerika. Durch die geringere physische Entfernung, sind die Latenzen geringer und die Seite und der Content wird schneller dargestellt. Zusätzlich wird der Webserver entlastet.
+
+	
+  2. Parallele HTTP-Connections: Kein direkter Vorteil eines CDN, sondern eher angenehmer Nebeneffekt ist die Beschleunigung durch verschiedene Quellen. Laut Spezifikation erlaubt HTTP eigentlich nur 2 parallele Verbindungen zu einem Server. Aktuelle Browser können einige Verbindungen mehr aufbauen, aber spätestens bei 10 ist Schluss. Das bedeutet, dass beim Laden einer typischen Seite, die z.B. 20 Grafikelemente, und noch ein paar CSS und JavaScript Dateien eingebunden hat, diese nur Stück für Stück geladen werden können, also z.B. bei max. 8 parallelen Verbindungen werden zuerst 8 Dateien parallel geladen, und es dann werden die nächsten Dateien parallel geladen, usw... Durch ein CDN werden statische Inhalte über andere Server bereit gestellt, d.h. während die max. 8 Verbindungen noch CSS und JS vom Webserver _example.com_ laden, können bereits Bilder von _cdn.example.com_ geladen werden. Die beschleunigt den Seitenaufbau zusätzlich.
+
+
+Okay, genug der Theorie: **Die Einrichtung von Amazon CloudFront** beginnt natürlich in der [AWS Konsole](https://console.aws.amazon.com/) mit einem Klick auf _CloudFront_. Ich gehe im folgenden davon aus, dass die Ursprungsseite, die mit CloudFront beschleunigt werden soll, bei Amazon S3 liegt. Das ist allerdings keine Voraussetzung, CloudFront kann auch beliebige Seiten die bei anderen Anbietern gehostet werden, beschleunigen.
+
+Durch einen Klick auf _Create Distribution_ erstellt man eine neue CloudFront Distribution, und wählt dann _Download_ als Verteilungsart. Ein Klick auf _Origin Domain Name_ zeigt die vorhandenen S3-Buckets an, so dass der passende einfach angeklickt werden kann. Für eine Seite, die wo anders gehostet wird, muss hier der Domain Name der Ursprungsseite eingetragen werden. Die _Origin ID_ wird bei S3-Buckets automatisch ausgefüllt, bei eigenen Seiten muss hier eine eindeutige ID eingetragen werden. Die Einstellungen unter _Default Cache Behaviour Settings_ sind selbsterklärend und können auf default gelassen werden, interessanter sind die _Distribution Settings_.
+
+Über _Price Class_ wird definiert über welche Edge Locations der Content bereit gehalten werden soll. Hier sollte man sich bewusst sein, dass jeder Standort separat berechnet wird, d.h. wähle ich alle Edge Locations, habe aber z.B. nur 2 Zugriffe im Monat aus Singapur, muss ich für die beiden Zugriffe auch Data Transfer und Requests bezahlen. (Was Merhkosten von 0,02 Euro also 2 Ct. entspricht, also bezahlbar ist.) Zielt die Seite eher auf europäisches und/oder nordamerikanisches Publikum, kann man hier ruhigen Gewissens auch _"Use only US and Europe"_ als Preisklasse auswählen.
+
+Unter _Alternate Domain Names (CNAMEs)_ können Subdomains eingetragen werden, die für CloudFront genutzt werden sollen, also z.B. _cdn.example.org_ oder _css.example.org_ und _js.example.org_. Es kann auch mehr als ein CNAME angegeben werden, oder gar keiner. Die Nutzung von CNAMEs erleichtert allerdings die Zuweisung der Inhalte und dient auch der Übersicht.
+
+Über _Default Root Object_ kann z.B. auch eine _index.html_ erreichbar gemacht werden, d.h. die Seite kann dann komplett über CloudFront verteilt werden. Ob das hilfreich ist, sollte man am besten selber testen, in meinen Tests erwies sich das bereitstellen von ganzen Seiten über CloudFront als keine gute Lösung, da die Antwortzeiten zu hoch waren.
+
+Durch einen Klick auf _Create Distribution_ wird die Distribution erstellt. Die Verteilung an die verschiedenen Edge Locations dauert nun einige Zeit, sobald in der Übersicht der Status auf _Enabled_ springt, ist die Distribution online und kann genutzt werden. Hat man zuvor eigene Subdomains angegeben, müssen jetzt noch die entsprechenden CNAME-Records bei dem DNS-Anbieter der Domain angelegt werden. Das Ziel der CNAME-Records ist der angegebene Domain Name, also _irgendwas.cloudfront.net_. Möchte man keine eigene Subdomain nutzen, muss man den Content über diesen etwas unhandlichen Domain Name ansprechen.
+
+Die Funktionsweise von Amazon CloudFront ist nun denkbar einfach: CloudFront cached die Dateien aus dem definierten Ursprungsort und stellt diese über Edge Locations bereit. D.h. möchte man nun Bilder über CloudFront verteilen, muss im Quellcode einfach nur der Domain-Pfad ergänzt werden, die Ordnerstruktur bleibt gleich. War der Pfad für ein Bild beispielsweise bisher `/static/img/test.jpg` ist er nun `//cdn.example.org/static/img/test.jpg`.
+
+Man sollte nun nur noch beachten, dass CloudFront Dateien cached, und zwar nach folgendem Prinzip: Wird bei Dateien das Caching über den Header definiert (z.B. durch _Cache-Control_), dann übernimmt CloudFront diese Werte. Wird also z.B. über _Cache-Control_ eine Dauer von 30 Tagen definiert, dann cached CloudFront diese Datei 30 Tage. D.h. eventuelle Änderungen werden erst nach diesen 30 Tagen von CloudFront aktualisiert. Ist keine Cache-Dauer vorgegeben, cached CloudFront die Datei 24 Stunden und aktualisiert sie erst dann vom Ursprungsort. D.h. selbst dann werden Änderungen nicht sofort sichtbar. Die Cache-Dauer lässt sich auch in den Einstellungen über die _Minimum TTL_ anpassen, weitere Details dazu finden sich im [CloudFront Developer Guide](http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Expiration.html).
+
+Noch ein Wort zu den Kosten: Im Gegensatz zu Amazon S3, das einen einjährigen kostenlosen Testzeitraum bietet, entstehen bei Amazon CloudFront direkt kosten. Diese hängen wie bei AWS üblich, nur von der Nutzung ab und sind sehr [überschaubar](http://aws.amazon.com/de/cloudfront/pricing/). So kosten z.B. 1 GB ausgehende Datenübertragung in Europa 12 Ct. und 10.000 HTTP-Anforderungen in Europa 0,9 Ct. Für eine Seite die im Monate nur einige hundert Klicks hat, entstehen so Kosten im unteren Cent-Bereich. Es ist also absolut bezahlbar, Amazon CloudFront auch für kleinere Projekte und Seiten einzusetzen. Der Performance-Gewinn hingegen ist nicht zu verachten, allerdings gibt es eine Reihe von Faktoren die noch einen größeren Einfluss auf die Performance haben (z.B. Komprimierung, Caching...). Wie man diese bei einer Amazon S3 gehosteten Seite optimiert, erkläre ich in einem weiteren Post.

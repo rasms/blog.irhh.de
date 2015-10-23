@@ -10,7 +10,7 @@ Nach der Migration aller Hyper-V Hosts auf Windows Server 2012 R2 habe ich nun m
 
 Erster wichtiger Punkt ist die Installation der VM. Die Installation muss zwingend mit VMM durchgeführt werden. Wird die VM über den Hyper-V Manager erstellt, ist es später nicht möglich, ein Template aus ihr zu erstellen. Bei der Erstellung der VM über VMM muss außerdem bei der Hardware Konfiguration unter dem Punkt <i>Firmware</i> der <i>sichere Start</i> deaktiviert werden.
 
-![VMM gen2 VM Template]({{ site.url }}/images/2014/vmmgen2_1.png )
+![VMM gen2 VM Template]({{ site.url }}/images/2014/vmmgen21.png )
 
 Nach der Installation kann wie gewohnt die VM konfiguriert werden, also z.B. Software installiert werden, etc.
 
@@ -18,7 +18,7 @@ Nach der Installation kann wie gewohnt die VM konfiguriert werden, also z.B. Sof
 
 Direkt vor der Erstellung des Templates muss die Bootreihenfolge der VM geändert werden. Dafür zuerst die VM ausschalten und anschließend über den Hyper-V Manager die Einstellungen der VM öffnen. Unter <i>Firmware</i> muss die Bootreihenfolge geändert werden, <i>Datei (bootmgfw.efi)</i> muss von der ersten Position nach unten verschoben werden.
 
-![VMM gen2 VM Template]({{ site.url }}/images/2014/vmmgen2_2.png )
+![VMM gen2 VM Template]({{ site.url }}/images/2014/vmmgen22.png )
 
 Im Anschluß kann das VM-Template wie gewohnt über die VMM-Konsole erstellt werden.
 

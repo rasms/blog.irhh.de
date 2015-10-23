@@ -2,13 +2,13 @@
 #
 # Use of `relative_permalinks` ensures post links from the index work properly.
 permalink:           '/:year/:title'
-relative_permalinks: true
+relative_permalinks: false
 
 # Setup
 title:               blog.irhh.de
 tagline:             'virtualization, management, deployment'
 description:         'Just another IT-blog... Focused on virtualization, cloud and web-stuff.'
-url:                 'blog.irhh.de'
+url:                 'http://blog.irhh.de'
 baseurl:             ''
 
 # About/contact

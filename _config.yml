@@ -19,3 +19,5 @@ author:
 
 gems:
   - jekyll-sitemap
+
+exclude: [vendor]

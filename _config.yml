@@ -8,7 +8,7 @@ relative_permalinks: false
 title:               blog.irhh.de
 tagline:             'virtualization, management, deployment'
 description:         'Just another IT-blog... Focused on virtualization, cloud and web-stuff.'
-url:                 'http://blog.irhh.de'
+url:                 'https://blog.irhh.de'
 baseurl:             ''
 
 # About/contact

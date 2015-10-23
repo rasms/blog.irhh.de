@@ -1,26 +1,17 @@
 ---
-author: Rasmus
 comments: true
-date: 2013-09-03 11:12:43+00:00
 layout: post
-slug: statische-webinhalte-durch-amazon-cloudfront-bereitstellen
 title: Statische Webinhalte durch Amazon CloudFront bereitstellen
-wordpress_id: 2089
-categories:
-- Amazon CloudFront
-- AWS
 ---
 
 Nachdem ich [hier](http://blog.irhh.de/2013/statische-website-auf-amazon-s3-hosten/) bereits erklärt habe, wie man eine statische Website mit Amazon S3 bereitstellt, wende ich mich nun der Content-Bereitstellung durch Amazon CloudFront zu.
 
-Zuerst einmal etwas Theorie: **Was ist Amazon CloudFront und was bringt es mir? **
+Zuerst einmal etwas Theorie: **Was ist Amazon CloudFront und was bringt es mir?**
 
-<!-- more -->
 
-	
   1. Amazon CloudFront ist ein Content Delivery Network (CDN). Ziel eines CDN ist es, die Bereitstellung von (statischem) Content zu beschleunigen, indem der Content durch weltweit verteilte Server (sog. Edge Locations) bereitgestellt wird. Das Prinzip dahinter ist simpel: Steht mein Webserver irgendwo in Deutschland und ein Besucher ruft die Seite z.B. aus New York auf, dann hat er aufgrund der physischen Entfernung recht hohe Latenzzeiten, d.h. die Seite ist langsam. Besonders zu tragen kommt dies bei Inhalten, also Bildern, Videos, aber auch bei JavaScript und CSS. Ein CDN spiegelt nun diese Inhalte an alle Edge Locations weltweit und regelt auch die Zugriffe. D.h. Content der über das CDN verteilt wird, wird einem Seitenbesucher aus New York direkt von der nächsten Edge Location zu verfügung gestellt, also vermutlich von einer Serverfarm in Nordamerika. Durch die geringere physische Entfernung, sind die Latenzen geringer und die Seite und der Content wird schneller dargestellt. Zusätzlich wird der Webserver entlastet.
 
-	
+
   2. Parallele HTTP-Connections: Kein direkter Vorteil eines CDN, sondern eher angenehmer Nebeneffekt ist die Beschleunigung durch verschiedene Quellen. Laut Spezifikation erlaubt HTTP eigentlich nur 2 parallele Verbindungen zu einem Server. Aktuelle Browser können einige Verbindungen mehr aufbauen, aber spätestens bei 10 ist Schluss. Das bedeutet, dass beim Laden einer typischen Seite, die z.B. 20 Grafikelemente, und noch ein paar CSS und JavaScript Dateien eingebunden hat, diese nur Stück für Stück geladen werden können, also z.B. bei max. 8 parallelen Verbindungen werden zuerst 8 Dateien parallel geladen, und es dann werden die nächsten Dateien parallel geladen, usw... Durch ein CDN werden statische Inhalte über andere Server bereit gestellt, d.h. während die max. 8 Verbindungen noch CSS und JS vom Webserver _example.com_ laden, können bereits Bilder von _cdn.example.com_ geladen werden. Die beschleunigt den Seitenaufbau zusätzlich.
 
 

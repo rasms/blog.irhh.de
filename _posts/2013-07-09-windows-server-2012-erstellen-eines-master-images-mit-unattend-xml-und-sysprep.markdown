@@ -1,20 +1,10 @@
 ---
-author: Rasmus
 comments: true
-date: 2013-07-09 07:36:36+00:00
 layout: post
-slug: windows-server-2012-erstellen-eines-master-images-mit-unattend-xml-und-sysprep
 title: 'Windows Server 2012: Erstellen eines Master Images mit unattend.xml und Sysprep'
-wordpress_id: 1799
-categories:
-- Sysprep
-- unattend.xml
-- Windows Server 2012
 ---
 
 Nutzt man für die Bereitstellung von Servern und Clients im Unternehmen ein Imaging-Tool wie z.B. Norton Ghost oder WDS, macht es Sinn für verschiedene Einsatzzwecke Images zu erstellen, die bereits bestimmte Software, Treiber und Konfigurationen enthalten. Diese sog. Master Images sollten mit einer Antwortdatei (unattend.xml) und Sysprep vorbereitet werden, so dass sie beim ersten Booten nach der Verteilung, unter anderem, automatisch eine neue SID und einen neuen Computernamen erzeugen. Nur mit Sysprep, ohne unattend.xml funktioniert das ganze zwar auch, allerdings ist dann beim Bootvorgang eines jeden Images manuelles Eingreifen und Konfigurieren erforderlich. Mittels unattend.xml kann dieser Vorgang so weit angepasst werden, dass er vollkommen automatisch abläuft. Zusätzlich können noch sehr viele Konfigurationen angepasst werden, die durch den Sysprep-Vorgang verloren gehen.
-
-<!-- more -->
 
 
 ## unattend.xml erstellen
@@ -61,13 +51,13 @@ Der Punkt _oobe_ (out-of-box-experience) ist der umfangreichste in dieser Konfig
 
 Um zu verhindern dass das Administrator Passwort abläuft muss unter `Microsoft-Windows-Shell-Setup` der Punkt `FirstLogonCommands` ergänzt werden. Unter `SynchronousCommand` wird als `CommandLine` der Befehl
 
-```
+{% highlight text %}
 cmd /C wmic useraccount where "name='Administrator'" set PasswordExpires=FALSE
-```
+{% endhighlight %}
 
 übergeben und `RequiresUserInput` auf `false` gesetzt. So wird beim ersten Anmelden automatisch der genannte Befehl ausgeführt, der das Ablaufen des Administrator-Passworts deaktiviert.
 
-Im Anschluss kann die unattend.xml gespeichert werden. Das Ergebnis als XML-Datei sieht wie folgt aus und kann [hier](http://files.irhh.de/blog/unattend.xml) heruntergeladen werden:
+Im Anschluss kann die unattend.xml gespeichert werden. Das Ergebnis als XML-Datei sieht wie folgt aus:
 
 {% gist b83786d2ddbdedf59f1b %}
 
@@ -77,9 +67,9 @@ Im Anschluss kann die unattend.xml gespeichert werden. Das Ergebnis als XML-Date
 
 Zum Ausführen von Sysprep bietet es sich an, eine kleine Batch-Datei anzulegen, die Sysprep mit den benötigten Parametern und der unattend.xml ausführt.
 
-```
+{% highlight text %}
 sysprep.exe /generalize /oobe /reboot /unattend:unattend.xml
-```
+{% endhighlight %}
 
 Die Batch-Datei muss zusammen mit der unattend.xml in das Sysprep-Verzeichnis unter _C:\Windows\System32\Sysprep_ gelegt werden. Nach Ausführung der Batch-Datei beginnt direkt die Versiegelung (generalize) und anschließen startet Windows neu. Nun gilt es, anstelle des Neustarts, das System mit seinem Imaging-Tool zu booten (z.B. von USB oder PXE-Boot) und ein Image zu erstellen. Wird dieses Image später verteilt, wird beim ersten Booten direkt wie gewünscht der Sysprep-Vorgang weitergeführt.
 

@@ -1,8 +1,6 @@
 ---
 comments: true
-date: 2015-02-11
 layout: post
-slug: attach-vhd-make-bootable-powershell
 title: Attach a VHD and make it bootable with PowerShell
 ---
 

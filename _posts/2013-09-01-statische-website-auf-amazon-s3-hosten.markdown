@@ -1,21 +1,15 @@
 ---
-author: Rasmus
 comments: true
-date: 2013-09-01 13:10:09+00:00
 layout: post
-slug: statische-website-auf-amazon-s3-hosten
 title: Statische Website auf Amazon S3 hosten
 wordpress_id: 2082
-categories:
-- Amazon S3
-- AWS
+
 ---
 
 In einer kleinen Serie von Posts werde ich mal erklären, wie man eine statische Website auf Amazon S3 hostet, mit [Amazon CloudFront beschleunigt](http://blog.irhh.de/2013/statische-webinhalte-durch-amazon-cloudfront-bereitstellen/), für die Performance-Optimierung Inhalte komprimiert bereitstellt und das Browser-Caching steuert und wie man mit Amazon Route 53 die DNS-Auflösung an AWS übergibt. Ich beginne in diesem Post mit S3:
 
 
 Nach der obligatorischen Registrierung bei [AWS](http://aws.amazon.com/de/) kann man auf die [AWS Konsole](https://console.aws.amazon.com/) zugreifen und dort alle benötigten Services einrichten. Für die Einrichtung von S3 klickt man entsprechend auf S3. Amazon S3 benutzt zur Organisation sog. Buckets, d.h. erster Schritt zum anlegen einer neuen Seite oder eines neuen Projektes ist immer das Erstellen eines neuen Buckets. Hierbei gibt es bereits zwei Punkte zu beachten:
-
 
 
 
@@ -27,7 +21,7 @@ Nach der obligatorischen Registrierung bei [AWS](http://aws.amazon.com/de/) kan
 
 Nach dem der Bucket erstellt wurde, müssen die Berechtigungen angepasst werden. In der default-Konfiguration ist der Bucket nur für einen selber freigegeben, soll er aber zum hosten einer Website dienen, muss er für alle Zugriffe freigegeben werden. Am einfachsten lässt sich das durch eine _Bucket-Policy_ umsetzen. Um eine neue Policy anzulegen, wählt man den Bucket aus, öffnet die _Properties_ und klickt dort auf _Permissions_. Über _Edit Bucket Policy_ startet man den _Bucket Policy Editor_ und trägt folgendes ein (_<bucketname>_ muss natürlich entsprechend ersetzt werden):
 
-	{% highlight ruby %}
+	{% highlight text %}
     {
     	"Version": "2008-10-17",
     	"Statement": [
@@ -46,9 +40,9 @@ Nach dem der Bucket erstellt wurde, müssen die Berechtigungen angepasst werden.
 
 Nach dem der Bucket jetzt freigegeben ist, muss er noch für statisches Hosting aktiviert werden. Dies geschieht ebenfalls über die Einstellungen, über den Punkt _Static Website Hosting_. Über _Enable website hosting_ aktiviert man das hosting, man muss nun nur noch die Startseite festlegen, meistens wird das _index.html_ sein. Bei Bedarf kann auch ein Error-Document festgelegt werden. Bevor man die Einstellungen speichert, sollte man sich noch den _Endpoint_ kopieren, dies ist die Adresse, über die der Bucket(-Inhalt) erreichbar ist. Hat man Irland als Standort gewählt, sieht die Adresse wie folgt aus:
 
-
+{% highlight text %}
     bucketname.s3-website-eu-west-1.amazonaws.com
-
+{% endhighlight %}
 
 Soll die Seite über einen eigenen Domain-Namen erreichbar sein, legt man einfach bei seinem Domain-Registrar bzw. seinem DNS-Anbieter einen _CNAME-Record_ mit diese Ziel an. An dieser Stelle sei noch einmal darauf hingewiesen: Der Bucketname muss genauso heißen wie die (Sub-)Domain, sonst klappt es nicht. Außerdem funktioniert das nicht für second-level Domains, also z.B. _example.org_, sondern nur für Sub-Domains, also z.B. _www.example.org_. Um einen S3 Bucket über eine "Root-Domain" erreichbar zu machen, muss man die gesamte Namensauflösung dieser Domain an Amazon Route 53 übertragen (mehr dazu in einem späteren Post).
 
